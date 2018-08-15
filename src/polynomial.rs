@@ -327,6 +327,7 @@ where
 }
 
 impl<T: Zero + Clone> Zero for Polynomial<T> {
+    #[allow(unused_mut)]
     #[inline]
     fn zero() -> Polynomial<T> {
         Polynomial { data: smallvec![] }
