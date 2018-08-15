@@ -1,0 +1,8 @@
+[package]
+name = "eta3-spline"
+version = "0.1.0"
+authors = ["Josh Hejna <josh.hejna@gmail.com>"]
+
+[dependencies]
+smallvec = "0.6.4"
+num-traits = "0.2"
