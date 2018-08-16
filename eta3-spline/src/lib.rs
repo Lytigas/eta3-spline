@@ -1,9 +1,6 @@
 extern crate num_traits;
 #[macro_use]
 extern crate smallvec;
-#[cfg(test)]
-#[macro_use]
-extern crate serde_derive;
 
 pub mod polynomial;
 
@@ -129,66 +126,86 @@ pub fn eta_3(start: &MotionState<f64>, end: &MotionState<f64>, eta: &EtaParam<f6
     coeffs.0[4] = 35. * (end.x - start.x) - (20. * eta.0 + 5. * eta.2 + 2. / 3. * eta.4) * ca
         + (5. * eta.0.powi(2) * start.k
             + 2. / 3. * eta.0.powi(3) * start.dk
-            + 2. * eta.0 * eta.2 * start.k) * sa
+            + 2. * eta.0 * eta.2 * start.k)
+            * sa
         - (15. * eta.1 - 5. / 2. * eta.3 + 1. / 6. * eta.5) * cb
         - (5. / 2. * eta.1.powi(2) * end.k
             - 1. / 6. * eta.1.powi(3) * end.dk
-            - 1. / 2. * eta.1 * eta.3 * end.k) * sb;
-    coeffs.1[4] = 35. * (end.y - start.y) - (20. * eta.0 + 5. * eta.2 + 2. / 3. * eta.4) * sa
+            - 1. / 2. * eta.1 * eta.3 * end.k)
+            * sb;
+    coeffs.1[4] = 35. * (end.y - start.y)
+        - (20. * eta.0 + 5. * eta.2 + 2. / 3. * eta.4) * sa
         - (5. * eta.0.powi(2) * start.k
             + 2. / 3. * eta.0.powi(3) * start.dk
-            + 2. * eta.0 * eta.2 * start.k) * ca
+            + 2. * eta.0 * eta.2 * start.k)
+            * ca
         - (15. * eta.1 - 5. / 2. * eta.3 + 1. / 6. * eta.5) * sb
         + (5. / 2. * eta.1.powi(2) * end.k
             - 1. / 6. * eta.1.powi(3) * end.dk
-            - 1. / 2. * eta.1 * eta.3 * end.k) * cb;
+            - 1. / 2. * eta.1 * eta.3 * end.k)
+            * cb;
     // quintic (u^5)
     coeffs.0[5] = -84. * (end.x - start.x) + (45. * eta.0 + 10. * eta.2 + eta.4) * ca
         - (10. * eta.0.powi(2) * start.k + eta.0.powi(3) * start.dk + 3. * eta.0 * eta.2 * start.k)
-            * sa + (39. * eta.1 - 7. * eta.3 + 1. / 2. * eta.5) * cb
+            * sa
+        + (39. * eta.1 - 7. * eta.3 + 1. / 2. * eta.5) * cb
         + (7. * eta.1.powi(2) * end.k
             - 1. / 2. * eta.1.powi(3) * end.dk
-            - 3. / 2. * eta.1 * eta.3 * end.k) * sb;
-    coeffs.1[5] = -84. * (end.y - start.y) + (45. * eta.0 + 10. * eta.2 + eta.4) * sa
+            - 3. / 2. * eta.1 * eta.3 * end.k)
+            * sb;
+    coeffs.1[5] = -84. * (end.y - start.y)
+        + (45. * eta.0 + 10. * eta.2 + eta.4) * sa
         + (10. * eta.0.powi(2) * start.k + eta.0.powi(3) * start.dk + 3. * eta.0 * eta.2 * start.k)
-            * ca + (39. * eta.1 - 7. * eta.3 + 1. / 2. * eta.5) * sb
+            * ca
+        + (39. * eta.1 - 7. * eta.3 + 1. / 2. * eta.5) * sb
         - (7. * eta.1.powi(2) * end.k
             - 1. / 2. * eta.1.powi(3) * end.dk
-            - 3. / 2. * eta.1 * eta.3 * end.k) * cb;
+            - 3. / 2. * eta.1 * eta.3 * end.k)
+            * cb;
     // sextic (u^6)
     coeffs.0[6] = 70. * (end.x - start.x) - (36. * eta.0 + 15. / 2. * eta.2 + 2. / 3. * eta.4) * ca
         + (15. / 2. * eta.0.powi(2) * start.k
             + 2. / 3. * eta.0.powi(3) * start.dk
-            + 2. * eta.0 * eta.2 * start.k) * sa
+            + 2. * eta.0 * eta.2 * start.k)
+            * sa
         - (34. * eta.1 - 13. / 2. * eta.3 + 1. / 2. * eta.5) * cb
         - (13. / 2. * eta.1.powi(2) * end.k
             - 1. / 2. * eta.1.powi(3) * end.dk
-            - 3. / 2. * eta.1 * eta.3 * end.k) * sb;
-    coeffs.1[6] = 70. * (end.y - start.y) - (36. * eta.0 + 15. / 2. * eta.2 + 2. / 3. * eta.4) * sa
+            - 3. / 2. * eta.1 * eta.3 * end.k)
+            * sb;
+    coeffs.1[6] = 70. * (end.y - start.y)
+        - (36. * eta.0 + 15. / 2. * eta.2 + 2. / 3. * eta.4) * sa
         - (15. / 2. * eta.0.powi(2) * start.k
             + 2. / 3. * eta.0.powi(3) * start.dk
-            + 2. * eta.0 * eta.2 * start.k) * ca
+            + 2. * eta.0 * eta.2 * start.k)
+            * ca
         - (34. * eta.1 - 13. / 2. * eta.3 + 1. / 2. * eta.5) * sb
         + (13. / 2. * eta.1.powi(2) * end.k
             - 1. / 2. * eta.1.powi(3) * end.dk
-            - 3. / 2. * eta.1 * eta.3 * end.k) * cb;
+            - 3. / 2. * eta.1 * eta.3 * end.k)
+            * cb;
     // septic (u^7)
     coeffs.0[7] = -20. * (end.x - start.x) + (10. * eta.0 + 2. * eta.2 + 1. / 6. * eta.4) * ca
         - (2. * eta.0.powi(2) * start.k
             + 1. / 6. * eta.0.powi(3) * start.dk
-            + 1. / 2. * eta.0 * eta.2 * start.k) * sa
+            + 1. / 2. * eta.0 * eta.2 * start.k)
+            * sa
         + (10. * eta.1 - 2. * eta.3 + 1. / 6. * eta.5) * cb
         + (2. * eta.1.powi(2) * end.k
             - 1. / 6. * eta.1.powi(3) * end.dk
-            - 1. / 2. * eta.1 * eta.3 * end.k) * sb;
-    coeffs.1[7] = -20. * (end.y - start.y) + (10. * eta.0 + 2. * eta.2 + 1. / 6. * eta.4) * sa
+            - 1. / 2. * eta.1 * eta.3 * end.k)
+            * sb;
+    coeffs.1[7] = -20. * (end.y - start.y)
+        + (10. * eta.0 + 2. * eta.2 + 1. / 6. * eta.4) * sa
         + (2. * eta.0.powi(2) * start.k
             + 1. / 6. * eta.0.powi(3) * start.dk
-            + 1. / 2. * eta.0 * eta.2 * start.k) * ca
+            + 1. / 2. * eta.0 * eta.2 * start.k)
+            * ca
         + (10. * eta.1 - 2. * eta.3 + 1. / 6. * eta.5) * sb
         - (2. * eta.1.powi(2) * end.k
             - 1. / 6. * eta.1.powi(3) * end.dk
-            - 1. / 2. * eta.1 * eta.3 * end.k) * cb;
+            - 1. / 2. * eta.1 * eta.3 * end.k)
+            * cb;
 
     Curve {
         x: Polynomial::new(coeffs.0),
