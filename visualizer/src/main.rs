@@ -259,7 +259,7 @@ fn main() {
     let mut f = File::create("eta3.gp").unwrap();
     f.write(&*script).unwrap();
     let gnuplot = Command::new("gnuplot")
-        .arg("autoreplot.gp")
+        .arg("eta3.gp")
         .spawn()
         .expect("Could not start gnuplot");
     Win::run(()).expect("Win::run failed");
