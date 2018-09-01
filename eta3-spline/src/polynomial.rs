@@ -320,8 +320,7 @@ where
                     p = p + self.data[k].clone() * other.data[i - k].clone();
                 }
                 p
-            })
-            .collect();
+            }).collect();
         Polynomial::new(prod)
     }
 }

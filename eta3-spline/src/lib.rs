@@ -6,8 +6,12 @@ pub mod polynomial;
 
 use num_traits::{FromPrimitive, One, Zero};
 use polynomial::Polynomial;
+use std::error;
 use std::fmt::Debug;
 use std::ops::Div;
+#[cfg(test)]
+#[macro_use]
+extern crate expectest;
 
 /// A 2d space curve
 #[derive(Debug, Clone)]
@@ -248,5 +252,136 @@ mod eta_tests {
         wtr.write_record(&["x", "y"]).unwrap();
         let pts = curve.render(100);
         pts.iter().for_each(|p| wtr.serialize(p).unwrap());
+    }
+}
+
+use std::fmt;
+
+#[derive(Debug)]
+pub struct LengthError;
+
+impl fmt::Display for LengthError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Length mismatch on MotionStates and EtaParams")
+    }
+}
+
+impl error::Error for LengthError {
+    fn description(&self) -> &str {
+        "Length mismatch between MotionStates and EtaParam"
+    }
+}
+
+pub struct EtaCurve {
+    sections: Vec<Curve<f64>>,
+}
+
+impl EtaCurve {
+    /// Creates an EtaCurve from `n` `MotionState`s and `n-1` `EtaParam`s.
+    /// # Errors
+    /// If the lengths of slices do not correspond as above.
+    pub fn new(
+        states: &[MotionState<f64>],
+        params: &[EtaParam<f64>],
+    ) -> Result<EtaCurve, LengthError> {
+        if states.len() - 1 != params.len() {
+            return Err(LengthError);
+        };
+        let v: Vec<_> = params
+            .iter()
+            .enumerate()
+            .map(|x| eta_3(&states[x.0], &states[x.0 + 1], &x.1))
+            .collect();
+        Ok(EtaCurve { sections: v })
+    }
+
+    /// Returns the result of the curve `percent` along its length.
+    /// If `percent is outside of [0; 1), the result is `(0.0, 0.0)`.
+    pub fn eval(&self, percent: f64) -> (f64, f64) {
+        let idx = (percent * self.sections.len() as f64).floor() as usize;
+        match self.sections.get(idx) {
+            Some(x) => x.eval(percent * self.sections.len() as f64 - idx as f64),
+            _ => (0., 0.),
+        }
+    }
+
+    pub fn get_curve(&self, i: usize) -> Option<&Curve<f64>> {
+        self.sections.get(i)
+    }
+}
+
+#[cfg(test)]
+mod eta_curve_tests {
+    use super::*;
+    use expectest::prelude::*;
+
+    #[test]
+    #[should_panic]
+    fn panic_eta() {
+        let s = vec![
+            MotionState {
+                x: 0.,
+                y: 0.,
+                t: 0.,
+                k: 0.,
+                dk: 0.,
+            },
+            MotionState {
+                x: 10.,
+                y: 5.,
+                t: 3.14,
+                k: 0.,
+                dk: 0.,
+            },
+        ];
+        let eta = vec![
+            EtaParam::new(10., 5., 0., 0., 0., 0.),
+            EtaParam::new(10., 5., 0., 0., 0., 0.),
+        ];
+        EtaCurve::new(s.as_slice(), eta.as_slice()).unwrap();
+    }
+
+    #[test]
+    fn test_vals() {
+        let s = vec![
+            MotionState {
+                x: 1.,
+                y: 2.,
+                t: 0.,
+                k: 0.,
+                dk: 0.,
+            },
+            MotionState {
+                x: 10.,
+                y: 5.,
+                t: 3.14,
+                k: 0.,
+                dk: 0.,
+            },
+            MotionState {
+                x: 100.,
+                y: 10.,
+                t: 0.,
+                k: 0.,
+                dk: 0.,
+            },
+        ];
+        let eta = vec![
+            EtaParam::new(10., 5., 0., 0., 0., 0.),
+            EtaParam::new(10., 5., 0., 7., 0., 0.),
+        ];
+        let curve = EtaCurve::new(s.as_slice(), eta.as_slice()).unwrap();
+        expect!(curve.eval(0f64).0).to(be_close_to(1f64));
+        expect!(curve.eval(0f64).1).to(be_close_to(2f64));
+
+        expect!(curve.eval(0.5).0).to(be_close_to(10f64));
+        expect!(curve.eval(0.5).1).to(be_close_to(5f64));
+
+        expect!(curve.eval(0.999999).0).to(be_close_to(100f64));
+        expect!(curve.eval(0.999999).1).to(be_close_to(10f64));
+
+        // Explicitly exclude 1.0
+        expect!(curve.eval(1.0).0).to(be_close_to(0f64));
+        expect!(curve.eval(1.0).1).to(be_close_to(0f64));
     }
 }

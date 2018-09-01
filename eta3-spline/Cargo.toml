@@ -1,6 +1,6 @@
 [package]
 name = "eta3-spline"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Josh Hejna <josh.hejna@gmail.com>"]
 
 [dependencies]
@@ -11,3 +11,4 @@ num-traits = "0.2"
 csv = "1.0.0"
 serde = "1.0"
 serde_derive = "1.0"
+expectest = "0.10.0"
